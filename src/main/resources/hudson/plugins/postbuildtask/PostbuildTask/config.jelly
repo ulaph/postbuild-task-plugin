@@ -1,18 +1,18 @@
 <!--
  * The MIT License
- * 
+ *
  * Copyright (c) 2009, Ushus Technologies LTD.,Shinod K Mohandas
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,52 +27,29 @@
   <d:taglib uri="local">
     <f:entry title="${%Tasks}">
       <f:repeatable var="t" items="${instance.tasks}" add="Add another task" minimum="1">
-        <p:blockWrapper>
-        <f:nested>
-          <f:entry title="" help="/plugin/postbuild-task/help/help-logText.html">
-               <f:repeatable var="lp" items="${t.logTexts}" minimum="1">
-                 <p:blockWrapper>
-                   	
-                   		<f:entry title="${%Log text}">
-                   			<f:textbox name="postbuild-task.logProperties.logText" value="${lp.logText}" />
-                   		</f:entry>
-                   	<div width="100%">
-                   		<f:entry title="${%Operation}" >
-                   			<select name="postbuild-task.logProperties.operator" align="right" >
-                   				<f:option value="AND" selected="${lp.operator=='AND'}">-- AND --</f:option>
-                   				<f:option value="OR" selected="${lp.operator=='OR'}">-- OR --</f:option>
-        			      		</select>
-                        	<f:repeatableDeleteButton value="Delete Log Text"/>
-        	      			</f:entry>
-          			</div>
-                 </p:blockWrapper>
-               </f:repeatable>
-           </f:entry>
-		</f:nested>
-		<f:block>
-              <input name="postbuild-task.logProperties.logText" type="hidden" value="@$#endofblock" />
-              <input name="postbuild-task.logProperties.operator" type="hidden" value="@$#endofblock" />
-      </f:block>
+      <table width="100%">
+          <f:entry title="${%Log text}">
+            <f:textbox name="postbuild-task.taskproperties.logText" value="${t.logText}" />
+          </f:entry>
           <f:entry title="${%Script}" help="/plugin/postbuild-task/help/help-script.html">
-            <textarea class="setting-input" name="postbuild-task.taskpropertes.script"
-              rows="5" style="width:100%">${t.script}</textarea>
+            <f:textarea name="postbuild-task.taskproperties.script"
+              rows="5" style="width:100%" value="${t.script}" />
           </f:entry>
          <f:entry title="${%Run script only if all previous steps were successful}" help="/plugin/postbuild-task/help/help-runifjobsuccessful.html">
-               <f:checkbox name="postbuild-task.taskpropertes.RunIfJobSuccessful" value="true" checked="${t.getRunIfJobSuccessful()}" /> 
+               <f:checkbox name="postbuild-task.taskproperties.RunIfJobSuccessful" value="${t.RunIfJobSuccessful}" checked="${t.RunIfJobSuccessful}" />
          </f:entry>
 
          <f:entry title="${%Escalate script execution status to job status}" help="/plugin/postbuild-task/help/help-escalatestatus.html">
-               <f:checkbox name="postbuild-task.taskpropertes.EscalateStatus" value="true" checked="${t.getEscalateStatus()}" /> 
+               <f:checkbox name="postbuild-task.taskproperties.EscalateStatus" value="${t.EscalateStatus}" checked="${t.EscalateStatus}" />
          </f:entry>
-          <f:entry>
+         <f:entry title="">
             <div align="right">
-              <input type="button" value="${%Delete task}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
+              <f:repeatableDeleteButton />
             </div>
           </f:entry>
-        </p:blockWrapper>
-        <p:blockWrapper><p:rowWrapper><p:cellWrapper/></p:rowWrapper></p:blockWrapper>
+          </table>
       </f:repeatable>
     </f:entry>
-  </d:taglib>  
+  </d:taglib>
   </f:block>
 </j:jelly>

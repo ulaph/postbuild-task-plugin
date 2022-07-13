@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2009, Ushus Technologies LTD.,Shinod K Mohandas
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,14 +27,13 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * A task properties.
- * 
+ *
  * @author Shinod Mohandas
  */
 public final class TaskProperties {
 	/**
 	 * The text string which should be searched in the build log.
 	 */
-	public LogProperties[] logTexts;
 	public Boolean EscalateStatus;
 	public Boolean RunIfJobSuccessful;
 	public String logText;
@@ -44,33 +43,11 @@ public final class TaskProperties {
 	public String script;
 
 	@DataBoundConstructor
-	public TaskProperties(String script, Boolean EscalateStatus, Boolean RunIfJobSuccessful) {
+	public TaskProperties(String logText, String script, Boolean EscalateStatus, Boolean RunIfJobSuccessful) {
+		this.logText = logText;
 		this.script = script;
 		this.EscalateStatus = EscalateStatus;
 		this.RunIfJobSuccessful = RunIfJobSuccessful;
-	}
-
-	public void setLogTexts(LogProperties[] logTexts) {
-		this.logTexts = logTexts;
-	}
-
-	public Boolean getEscalateStatus(){
-		return this.EscalateStatus;
-	}
-	public Boolean getRunIfJobSuccessful(){
-		return this.RunIfJobSuccessful;
-	}
-
-	public LogProperties[] getLogProperties() {
-		return logTexts;
-	}
-
-	public String getScript() {
-		return script;
-	}
-	
-	private void addLogTextToArray() {
-		logTexts = new LogProperties[] {new LogProperties(logText,"AND")};
 	}
 
 	/*

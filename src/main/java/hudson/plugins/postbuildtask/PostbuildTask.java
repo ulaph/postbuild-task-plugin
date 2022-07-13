@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2009-2011, Ushus Technologies LTD., Shinod K Mohandas
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,7 +36,9 @@ import hudson.tasks.CommandInterpreter;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.tasks.Shell;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONTokener;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.ArrayList;
@@ -52,7 +54,7 @@ import java.util.regex.Matcher;
 
 /**
  * Post build tasks added as {@link Recorder}.
- * 
+ *
  * @author Shinod Mohandas
  */
 public class PostbuildTask extends Recorder {
@@ -64,12 +66,12 @@ public class PostbuildTask extends Recorder {
 	}
 
 	public PostbuildTask(Collection<TaskProperties> tasks) {
-		this(tasks.toArray(new TaskProperties[0]));
+		this(tasks.toArray(new TaskProperties[tasks.size()]));
 	}
 
 	/**
 	 * This method will return the taskProperties foe the specified logText
-	 * 
+	 *
 	 * @return all the tasks.
 	 */
 	// TODO need to finish later
@@ -79,7 +81,7 @@ public class PostbuildTask extends Recorder {
 
 	/**
 	 * This method will return all the tasks
-	 * 
+	 *
 	 * @return all the tasks.
 	 */
 	public List<TaskProperties> getTasks() {
@@ -105,14 +107,12 @@ public class PostbuildTask extends Recorder {
 			for (int i = 0; i < tasks.length; i++) {
 				TaskProperties taskProperties = tasks[i];
 				String script = taskProperties.script;
-				if (checkLogTextMatch(taskProperties.getLogProperties(),
+				if (checkLogTextMatch(taskProperties.logText,
 						buildLog, listener)) {
 					listener.getLogger().println(
 							"Logical operation result is TRUE");
-					script = getGroupedScript(taskProperties
-							.getLogProperties(), taskProperties.script, buildLog);
 
-					if (taskProperties.getRunIfJobSuccessful() && pr!=null && pr.isWorseThan(Result.UNSTABLE)) {
+					if (taskProperties.RunIfJobSuccessful && pr!=null && pr.isWorseThan(Result.UNSTABLE)) {
 						listener.getLogger().println("Skipping post build task "+i+" - job status is worse than unstable : "+build.getResult());
 						continue;
 					}
@@ -127,7 +127,7 @@ public class PostbuildTask extends Recorder {
 					listener.getLogger().println(
 							"END OF POST BUILD TASK : " + i);
 
-					if((result == Result.FAILURE) && (taskProperties.getEscalateStatus())){
+					if((result == Result.FAILURE) && (taskProperties.EscalateStatus)) {
 							listener.getLogger().println("ESCALATE FAILED POST BUILD TASK TO JOB STATUS");
 							build.setResult(Result.FAILURE);
 					}
@@ -149,67 +149,9 @@ public class PostbuildTask extends Recorder {
 		return true;
 	}
 
-	private String getGroupedScript(LogProperties[] logTexts, String script,
-			String buildLog) {
-		List<String> matches = new ArrayList<String>();
-		for (int i = 0; i < logTexts.length; i++) {
-			LogProperties logInfo = logTexts[i];
-			Pattern pattern = Pattern.compile(logInfo.getLogText());
-			Matcher matcher = pattern.matcher(buildLog);
-			if(matcher.find()) {
-				for (int k = 0; k <= matcher.groupCount(); k++) {
-					matches.add(matcher.group(k));
-				}
-			}
-		}
-    
-    for(int index = 0; index < matches.size(); index++) {
-			script = script	.replace("%" + index, matches.get(index));
-		}
-		
-		return script;
-	}
-
-	private boolean checkLogTextMatch(LogProperties[] logTexts,
+	private boolean checkLogTextMatch(String logText,
 			String buildLog, BuildListener listener) {
-		boolean logmatch = false;
-
-		boolean match1 = false;
-		boolean match2 = false;
-		String operator1 = "";
-
-		for (int i = 0; i < logTexts.length; i++) {
-			LogProperties logInfo = logTexts[i];
-			String logText = logInfo.getLogText();
-			String operator = logInfo.getOperator();
-			match1 = isMatching(buildLog, logText, listener);
-			if (i != 0) {
-				match1 = doOperation(logmatch, match1, operator1);
-			} else {
-				logmatch = match1;
-			}
-
-			i++;
-			if (i < logTexts.length) {
-				LogProperties logInfo1 = logTexts[i];
-				String logText1 = logInfo1.getLogText();
-				operator1 = logInfo1.getOperator();
-				match2 = isMatching(buildLog, logText1, listener);
-				logmatch = doOperation(match1, match2, operator);
-			} else {
-				logmatch = match1;
-			}
-		}
-
-		return logmatch;
-
-	}
-
-	private boolean doOperation(boolean match1, boolean match2, String operation) {
-		if (operation.equals("AND"))
-			return (match1 & match2);
-		else
-			return (match1 | match2);
+		return isMatching(buildLog, logText, listener);
 	}
 
 	private boolean isMatching(String buildLog, String logText,
@@ -229,7 +171,7 @@ public class PostbuildTask extends Recorder {
 
 	/**
 	 * This method will return the command intercepter as per the node OS
-	 * 
+	 *
 	 * @param launcher
 	 * @param script
 	 * @return CommandInterpreter
@@ -266,35 +208,35 @@ public class PostbuildTask extends Recorder {
 		@Override
 		public PostbuildTask newInstance(StaplerRequest req, JSONObject formData)
 				throws FormException {
-			
+
 			if (req == null) {
 				throw new IllegalStateException("req is always non null");
 			}
-			
+
 			// if(req.getParameter("postbuild-task.")!=null)
-			List<LogProperties> logprops = req.bindParametersToList(
-					LogProperties.class, "postbuild-task.logProperties.");
-			List<TaskProperties> tasksprops = req.bindParametersToList(
-					TaskProperties.class, "postbuild-task.taskpropertes.");
-			for (Iterator iterator = tasksprops.iterator(); iterator.hasNext();) {
-				TaskProperties taskProperties = (TaskProperties) iterator
-						.next();
-				List<LogProperties> logPropsList = new ArrayList<LogProperties>();
-				for (Iterator iterator2 = logprops.iterator(); iterator2
-						.hasNext();) {
-					LogProperties logProperties = (LogProperties) iterator2
-							.next();
-					if (!logProperties.getLogText().equals("@$#endofblock")) {
-						logPropsList.add(logProperties);
-					} else {
-						logprops.remove(logProperties);
-						logprops.removeAll(logPropsList);
-						break;
-					}
+			List<TaskProperties> tasksprops = new ArrayList<TaskProperties>();
+			Object object = new JSONTokener(formData.getString("t")).nextValue();
+			if (object instanceof JSONArray) {
+				JSONArray arr = formData.getJSONArray("t");
+				for (int i=0; i < arr.size(); i++) {
+					JSONObject obj = arr.getJSONObject(i);
+					tasksprops.add(new TaskProperties(
+					    obj.getString("logText"),
+							obj.getString("script"),
+							obj.getBoolean("EscalateStatus"),
+							obj.getBoolean("RunIfJobSuccessful")
+					));
 				}
-				taskProperties.setLogTexts((LogProperties[]) logPropsList
-						.toArray(new LogProperties[logPropsList.size()]));
+			} else if (object instanceof JSONObject) {
+				JSONObject obj = formData.getJSONObject("t");
+				tasksprops.add(new TaskProperties(
+						obj.getString("logText"),
+						obj.getString("script"),
+						obj.getBoolean("EscalateStatus"),
+						obj.getBoolean("RunIfJobSuccessful")
+				));
 			}
+
 			return new PostbuildTask(tasksprops);
 		}
 	}
